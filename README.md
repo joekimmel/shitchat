@@ -2,14 +2,16 @@
 
 a simple chat server in Go that servers a browser client.
 
-**who should use shitchat**
+### who should use shitchat
+
 probably nobody. shitchat has no security, and accepts all HTML, CSS, and javascript code injections.
 
-**why did you write shitchat?**
+### why did you write shitchat?
+
 i wanted to play with Go and jquery/ajax, so a chat program seemed like a good place to start.
 
 **how can i run shitchat?**
-* go run server.go
+* `go run server.go`
 * now point your browser to localhost:2999
 
 **feature TODO list**
@@ -20,4 +22,5 @@ i wanted to play with Go and jquery/ajax, so a chat program seemed like a good p
 
 
 **license**
+
 creative commons share alike
