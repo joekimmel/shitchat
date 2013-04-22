@@ -1,0 +1,283 @@
+<html>
+<head>
+<title>shitchat</title>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>
+
+var last_ind = 0;
+var refresh_interval = 500;
+var refresh_interval_id;
+var user;
+
+function User(name, id){
+  this.id = id;
+  this.name = name;
+}
+
+function refresh_msgs(event) {
+  var params = {"last_ind": last_ind};
+  $.ajax({
+    type: "GET",
+    url: "/msgs/",
+    data: params,
+    complete: update_msgs,
+    dataType: "json",
+  });
+}
+
+function refresh_users(event) {
+  $.ajax({
+   type: "GET",
+   url: "/user/",
+   success: update_users,
+   dataType: "json"
+  });
+}
+
+function update_users(data) {
+  function sort_by_id(a, b){
+    return a['Id'] - b['Id'];
+  }
+  data.sort(sort_by_id);
+  var item = ""
+  for(var i=0; i<data.length; i++){
+    var mclass = data[i]['Id']==user.id ? "selfusername" : "username"
+    item += "<li class='"+mclass+"'>"+ data[i]['Name'] + " </li>"
+  }
+  $("ul ubody").html(item);
+}
+
+function update_msgs(response){
+  //TODO: play with a better way of doing exponential back-off:
+  //right now we get the response and check if it's empty,
+  // but i think i could use the success and failure callbacks?
+  // and have the failure callback be the exponential backoff
+  // ... thatd be cleaner i think.
+  if(response.responseText.length > 0){
+    data = JSON.parse(response.responseText);
+    if(data.length > 0){
+      for(var i=0; i<data.length; i++){
+        var item = "<li> ";
+        if(data[i]['User'] == user.name){
+          item += '<span class="selfusername">'
+        }
+        else {
+          item += '<span class="username">'
+        }
+        item += data[i]['User'] + ": </span>";
+        item += data[i]['Msg'];
+        item += "</li>";
+        $("ul pbody").append(item);
+        ind = data[i]['ID']
+        current_scroll = $("div[id=mainContainer]").scrollTop()
+        $("div[id=mainContainer]").scrollTop(current_scroll+22)
+        if (ind > last_ind){
+          last_ind = ind;
+        }
+      } //end for i in data.length
+      refresh_interval = 500;
+      set_up_refresh();
+    }//end if data.length > 0
+  }
+  else {
+    if(refresh_interval < 16000) {
+      refresh_interval *= 2;
+      set_up_refresh();
+    }
+  } //end else data.length > 0
+}
+
+function set_up_refresh() {
+      clearInterval(refresh_interval_id);
+      refresh_interval_id = setInterval(refresh_msgs, refresh_interval);
+}
+
+function user_create_ready(data) {
+      user.id = data['Id']
+      user.name = data['Name']
+}
+
+$(document).ready(function() {
+
+  //first set the chat msgs to refresh
+  refresh_interval_id = setInterval(refresh_msgs, refresh_interval);
+
+  //now lets create a stub user, set the user callbacks, get the users list...
+  $('input[id=usernameinput]').val("WebUser5000")
+  $('#usernameinput').blur(function(event) {
+    user.name = $('input[id=usernameinput]').val()
+    $.ajax({
+      type: "PUT",
+      url: "/user/",
+      data: {"name":user.name,
+              "ID":user.id}
+      });
+  });
+  refresh_users();
+  setInterval(refresh_users, 5000);
+  $('form[id=usernameform]').submit(function(event) {
+     event.preventDefault();
+  });
+  user = new User("WebUser5000", 0);
+  $.ajax({
+      type: "POST",
+      url: "/user/",
+      data: {"name":$('input[id=usernameinput]').val()},
+      success: user_create_ready,
+      dataType: "json"
+      });
+
+  //set up the ajax for posting messages
+  $('form[id=inputbox]').submit(function(event) {
+     event.preventDefault();
+     $.ajax({
+     type: "POST",
+     url: "/msgs/",
+     contentType: "application/json",
+     data: JSON.stringify({
+            'User': user.name,
+            'Msg': $('input[id=msg]').val()
+           }),
+     complete: shitchat,
+     dataType: "json"
+     });
+    $('input[id=msg]').val("")
+  });
+
+  //register to delete the user.
+  window.onbeforeunload = delete_user;
+
+});
+
+function delete_user() {
+    $.ajax({
+      type: "DELETE",
+      url: "/user/?ID="+user.id,
+      async: false
+    });
+}
+
+function shitchat(){
+  refresh_interval = 500;
+  set_up_refresh();
+}
+
+</script>
+
+<style type="text/css">
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: black;
+  color: #00FF00;
+}
+body {font-family: helvetica, sans-serif}
+
+input {
+  background-color: black;
+  color: #44FF44;
+}
+
+html {
+  overflow-y: scroll;
+}
+
+A:link {
+  text-decoration: none;
+  color: #FF7711;
+   }
+A:hover {
+         text-decoration: underline;
+         color: #FF9900;
+        }
+A:active {
+         text-decoration: underline;
+         color: #FFCC33;
+        }
+A:visited {
+         text-decoration: none;
+         color: #BB3300;
+        }
+
+#talkieFooter {
+  width: 800px;
+  background-color: #9090A0;
+  clear: both;
+}
+
+
+#mainContainer {
+overflow: auto;
+width: 79%;
+min-width: 300px;
+height: 500px;
+float: left;
+}
+
+#userContainer {
+width: 19%;
+min-width: 50px;
+height: 480px;
+float: right;
+border-color: #9090A0;
+border-style: dashed;
+border-width: 1px;
+overflow-y: scroll;
+}
+
+#littlePadding {
+ padding: 6px;
+}
+
+.username, .selfusername {
+  font-size: small;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.username {
+  color: #88D1DE;
+}
+
+.selfusername {
+  color: #B020BB;
+}
+
+#inputbox {
+  clear: both;
+}
+
+#usernameform {
+  float: right;
+  display: inline;
+}
+
+</style>
+
+</head>
+<body>
+
+<div id="mainContainer">
+<ul>
+<pbody>
+</pbody>
+</ul>
+</div>
+
+<div id="userContainer">
+<ul>
+<ubody>
+</ubody>
+</ul>
+</div>
+
+<div id="talkieFooter">
+<form id="inputbox">
+<div id="littlePadding">
+<input type=text id="msg" size="80" autofocus></input></div>
+</form>
+<form id="usernameform">Username: <input type=text id="usernameinput"></input></form>
+</div>
+</body>
+</html>
