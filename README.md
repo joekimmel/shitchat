@@ -1,6 +1,6 @@
 ## shitchat
 
-a simple chat server in Go that servers a browser client.
+a simple chat server in Go that serves a browser client.
 
 ### who should use shitchat
 
