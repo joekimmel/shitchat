@@ -151,6 +151,20 @@ $(document).ready(function() {
   //register to delete the user.
   window.onbeforeunload = delete_user;
 
+  $('button[id=flushremote]').click(function(event) {
+     event.preventDefault();
+     $.ajax({
+     type: "DELETE",
+     url: "/msgs/",
+     });
+  });
+  $('button[id=flushlocal]').click(function(event) {
+     event.preventDefault();
+     $("ul pbody").empty();
+     $("ul pbody").append("<li><i>flushed</i></li>");
+  });
+
+
 });
 
 function delete_user() {
@@ -210,24 +224,23 @@ A:visited {
   clear: both;
 }
 
-
 #mainContainer {
-overflow: auto;
-width: 79%;
-min-width: 300px;
-height: 500px;
-float: left;
+  overflow: auto;
+  width: 79%;
+  min-width: 300px;
+  height: 500px;
+  float: left;
 }
 
 #userContainer {
-width: 19%;
-min-width: 50px;
-height: 480px;
-float: right;
-border-color: #9090A0;
-border-style: dashed;
-border-width: 1px;
-overflow-y: scroll;
+  width: 19%;
+  min-width: 50px;
+  height: 480px;
+  float: right;
+  border-color: #9090A0;
+  border-style: dashed;
+  border-width: 1px;
+  overflow-y: scroll;
 }
 
 #littlePadding {
@@ -257,6 +270,13 @@ overflow-y: scroll;
   display: inline;
 }
 
+#flushbuttons {
+  width: 19%;
+  float: right;
+  clear: both;
+}
+
+
 </style>
 
 </head>
@@ -281,7 +301,13 @@ overflow-y: scroll;
 <div id="littlePadding">
 <input type=text id="msg" size="80" autofocus></input></div>
 </form>
+
+
 <form id="usernameform">Username: <input type=text id="usernameinput"></input></form>
+</div>
+<div id="flushbuttons">
+<button id="flushremote" type="submit">Flush Server</button>
+<button id="flushlocal" type="submit">Flush My Display</button>
 </div>
 </body>
 </html>

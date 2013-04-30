@@ -98,6 +98,10 @@ func get_msgs_since(last_ind int64) []byte {
 	return nil
 }
 
+func flush_msgs() {
+	POSTS = list.New()
+}
+
 //@.../msgs/
 func msgs_handler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
@@ -108,7 +112,9 @@ func msgs_handler(w http.ResponseWriter, r *http.Request) {
 		last_ind := int64(last_int)
 		bbytes := get_msgs_since(last_ind)
 		w.Write(bbytes)
-	} else {
+	} else if r.Method == "DELETE" {
+		flush_msgs()
+	}else {
 		fmt.Fprintf(w, "nope")
 	}
 }
