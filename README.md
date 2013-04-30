@@ -15,11 +15,11 @@ i wanted to play with Go and jquery/ajax, so a chat program seemed like a good p
 * now point your browser to localhost:2999
 
 **feature TODO list**
-* add a backend feature to flush the messages (POSTS)
-* add a frontend button to trigger the backend flush
-* add a frontend button to clear the frontend's messages
+* read the port in from a config file
 * add a password screen so that a single password can be required to enter the chat (ie no user/pass combo, just a single secret password)
-
+* read the password in from a config file
+* set the initial username from the password screen so people don't have to start as WebUser5000
+* bots
 
 **license**
 
