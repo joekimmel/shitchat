@@ -1,5 +1,7 @@
 ## shitchat
 
+Note - I wrote this quite a while ago in go 1.0 and it worked at one point but I don't think it compiles anymore.
+
 a simple chat server in Go that serves a browser client.
 
 ### who should use shitchat
